@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---- shadcn-style semantic tokens (HSL triplets, no hsl() wrapper) ---- */
+@layer base {
+  :root {
+    --background: 220 20% 97%;
+    --foreground: 230 25% 8%;
+    --card: 0 0% 100%;
+    --card-foreground: 230 25% 8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 230 25% 8%;
+    --primary: 12 76% 54%;           /* sindoor */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 178 79% 27%;        /* peacock */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 220 15% 94%;
+    --muted-foreground: 230 10% 40%;
+    --accent: 220 15% 94%;
+    --accent-foreground: 230 25% 8%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 230 15% 88%;
+    --input: 230 15% 88%;
+    --ring: 12 76% 54%;
+    --radius: 1rem;
+  }
+  .dark {
+    --background: 230 30% 6%;
+    --foreground: 220 20% 96%;
+    --card: 230 26% 10%;
+    --card-foreground: 220 20% 96%;
+    --popover: 230 26% 10%;
+    --popover-foreground: 220 20% 96%;
+    --primary: 12 85% 60%;
+    --primary-foreground: 230 30% 6%;
+    --secondary: 178 65% 40%;
+    --secondary-foreground: 230 30% 6%;
+    --muted: 230 18% 16%;
+    --muted-foreground: 220 10% 65%;
+    --accent: 230 18% 16%;
+    --accent-foreground: 220 20% 96%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 230 15% 20%;
+    --input: 230 15% 20%;
+    --ring: 12 85% 60%;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    @apply bg-background text-foreground font-body antialiased transition-colors duration-300;
+  }
+  h1, h2, h3, h4 { @apply font-display; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-card/70 backdrop-blur-xl border border-white/40 dark:border-white/10;
+  }
+  .section {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  /* Verified/seal badge — refined, calmer version of the stamp motif:
+     a clean ring pill rather than a rotated dashed rubber stamp, to match
+     the Stripe/Apple-level restraint this design asks for. */
+  .seal {
+    @apply inline-flex items-center gap-1 font-stamp text-[11px] font-bold uppercase tracking-wider
+           px-2.5 py-1 rounded-full ring-1 select-none;
+  }
+}
