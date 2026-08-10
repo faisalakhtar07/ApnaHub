@@ -2,58 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ---- shadcn-style semantic tokens (HSL triplets, no hsl() wrapper) ---- */
 @layer base {
-  :root {
-    --background: 220 20% 97%;
-    --foreground: 230 25% 8%;
-    --card: 0 0% 100%;
-    --card-foreground: 230 25% 8%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 230 25% 8%;
-    --primary: 12 76% 54%;           /* sindoor */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 178 79% 27%;        /* peacock */
-    --secondary-foreground: 0 0% 100%;
-    --muted: 220 15% 94%;
-    --muted-foreground: 230 10% 40%;
-    --accent: 220 15% 94%;
-    --accent-foreground: 230 25% 8%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 230 15% 88%;
-    --input: 230 15% 88%;
-    --ring: 12 76% 54%;
-    --radius: 1rem;
+  html {
+    scroll-behavior: smooth;
   }
-  .dark {
-    --background: 230 30% 6%;
-    --foreground: 220 20% 96%;
-    --card: 230 26% 10%;
-    --card-foreground: 220 20% 96%;
-    --popover: 230 26% 10%;
-    --popover-foreground: 220 20% 96%;
-    --primary: 12 85% 60%;
-    --primary-foreground: 230 30% 6%;
-    --secondary: 178 65% 40%;
-    --secondary-foreground: 230 30% 6%;
-    --muted: 230 18% 16%;
-    --muted-foreground: 220 10% 65%;
-    --accent: 230 18% 16%;
-    --accent-foreground: 220 20% 96%;
-    --destructive: 0 62% 45%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 230 15% 20%;
-    --input: 230 15% 20%;
-    --ring: 12 85% 60%;
-  }
-
-  html { scroll-behavior: smooth; }
   body {
-    @apply bg-background text-foreground font-body antialiased transition-colors duration-300;
+    @apply bg-paper text-ink dark:bg-paperdark dark:text-paper font-body antialiased transition-colors duration-300;
   }
-  h1, h2, h3, h4 { @apply font-display; }
-
+  h1, h2, h3, h4 {
+    @apply font-display;
+  }
+  /* Respect reduced motion preference */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
@@ -61,23 +20,45 @@
       transition-duration: 0.01ms !important;
     }
   }
-  *:focus-visible {
-    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  /* Visible keyboard focus */
+  a:focus-visible, button:focus-visible, input:focus-visible {
+    @apply outline-none ring-2 ring-sindoor ring-offset-2 ring-offset-paper dark:ring-offset-paperdark;
   }
 }
 
 @layer components {
-  .glass {
-    @apply bg-card/70 backdrop-blur-xl border border-white/40 dark:border-white/10;
-  }
-  .section {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-  }
-  /* Verified/seal badge — refined, calmer version of the stamp motif:
-     a clean ring pill rather than a rotated dashed rubber stamp, to match
-     the Stripe/Apple-level restraint this design asks for. */
-  .seal {
+  /* Reusable "rubber stamp" badge — the signature motif used sparingly
+     for verified listings, category tags, and status markers. */
+  .stamp {
     @apply inline-flex items-center gap-1 font-stamp text-[11px] font-bold uppercase tracking-wider
-           px-2.5 py-1 rounded-full ring-1 select-none;
+           px-2.5 py-1 rounded-full border-2 border-dashed select-none;
+  }
+  .stamp-teal {
+    @apply stamp text-peacock border-peacock/50 bg-peacock/5;
+  }
+  .stamp-gold {
+    @apply stamp text-gold border-gold/50 bg-gold/5;
+  }
+  .stamp-sindoor {
+    @apply stamp text-sindoor border-sindoor/50 bg-sindoor/5;
+  }
+
+  .card {
+    @apply bg-white dark:bg-indigo-800/40 rounded-card border border-black/5 dark:border-white/5
+           shadow-sm hover:shadow-lg transition-all duration-300;
+  }
+
+  .glass {
+    @apply bg-white/70 dark:bg-indigo-900/40 backdrop-blur-xl border border-white/40 dark:border-white/10;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-sindoor text-white font-semibold
+           px-6 py-3 hover:bg-sindoor-dark active:scale-[0.97] transition-all duration-200 shadow-md shadow-sindoor/20;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-indigo-900 dark:border-white/30
+           text-indigo-900 dark:text-white font-semibold px-6 py-3 hover:bg-indigo-900 hover:text-white
+           dark:hover:bg-white/10 active:scale-[0.97] transition-all duration-200;
   }
 }

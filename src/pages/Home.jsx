@@ -1,25 +1,23 @@
-import Hero from '@/components/home/Hero'
-import CategoriesSection from '@/components/home/CategoriesSection'
-import FeaturedBusinesses from '@/components/home/FeaturedBusinesses'
-import LatestJobs from '@/components/home/LatestJobs'
-import BuySellSection from '@/components/home/BuySellSection'
-import StatsSection from '@/components/home/StatsSection'
-import WhyChooseUs from '@/components/home/WhyChooseUs'
-import TestimonialsSection from '@/components/home/TestimonialsSection'
-import DownloadAppSection from '@/components/home/DownloadAppSection'
+import Hero from '../components/home/Hero'
+import FeaturedCategories from '../components/home/FeaturedCategories'
+import LatestJobs from '../components/home/LatestJobs'
+import LatestListings from '../components/home/LatestListings'
+import FeaturedBusinesses from '../components/home/FeaturedBusinesses'
+import PopularCategories from '../components/home/PopularCategories'
+import CTASection from '../components/home/CTASection'
+import Testimonials from '../components/home/Testimonials'
 
 export default function Home() {
   return (
     <>
       <Hero />
-      <CategoriesSection />
+      <FeaturedCategories />
       <LatestJobs />
-      <BuySellSection />
+      <LatestListings />
       <FeaturedBusinesses />
-      <StatsSection />
-      <WhyChooseUs />
-      <TestimonialsSection />
-      <DownloadAppSection />
+      <PopularCategories />
+      <CTASection />
+      <Testimonials />
     </>
   )
 }
