@@ -1,0 +1,15 @@
+{
+  "name": "APNAHUB — Everything Local",
+  "short_name": "APNAHUB",
+  "description": "Jobs, local businesses, and buy & sell listings for Aurangabad, Bihar.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0B1120",
+  "theme_color": "#4F46E5",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
