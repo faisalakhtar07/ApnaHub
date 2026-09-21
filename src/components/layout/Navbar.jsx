@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Menu, X, Sun, Moon, User } from "lucide-react";
 import Btn from "../ui/Btn";
-import { userAuthApi, subscriptionsApi } from "../../lib/api";
+import NotificationBell from "../NotificationBell";
+import { goToPostAd as sharedGoToPostAd } from "../../lib/postAdFlow";
 
 const LINKS = [
   { label: "Home", to: "/" },
@@ -22,15 +23,7 @@ export default function Navbar({ dark, toggleTheme }) {
 
   // Post an Ad now opens the subscription-based advertising system (not the older
   // guest Buy & Sell posting flow at /post-ad, which stays reachable from Buy & Sell itself).
-  const goToPostAd = async () => {
-    if (!userAuthApi.isLoggedIn()) return navigate("/subscribe");
-    try {
-      const res = await subscriptionsApi.mine();
-      navigate(res.active ? "/create-ad" : "/subscribe");
-    } catch {
-      navigate("/subscribe");
-    }
-  };
+  const goToPostAd = () => sharedGoToPostAd(navigate);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -79,6 +72,8 @@ export default function Navbar({ dark, toggleTheme }) {
           >
             {dark ? <Sun size={17} /> : <Moon size={17} />}
           </button>
+
+          <NotificationBell />
 
           <div className="hidden md:flex items-center gap-2 ml-1">
             <Btn variant="marigold" size="sm" onClick={goToPostAd}>Post an Ad</Btn>

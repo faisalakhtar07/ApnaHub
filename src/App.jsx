@@ -22,6 +22,7 @@ import Profile from "./pages/Profile";
 import PostAd from "./pages/PostAd";
 import SubscriptionPlans from "./pages/SubscriptionPlans";
 import CreateAd from "./pages/CreateAd";
+import AdDetails from "./pages/AdDetails";
 import MyAccount from "./pages/MyAccount";
 import NotFound from "./pages/NotFound";
 
@@ -60,6 +61,7 @@ export default function App() {
         <Route path="/post-ad" element={<PostAd />} />
         <Route path="/subscribe" element={<SubscriptionPlans />} />
         <Route path="/create-ad" element={<CreateAd />} />
+        <Route path="/ads/:id" element={<AdDetails />} />
         <Route path="/my-account" element={<MyAccount />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

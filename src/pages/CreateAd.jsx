@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Camera, X, CheckCircle2 } from "lucide-react";
+import { Camera, X, CheckCircle2, ImagePlus, PenSquare } from "lucide-react";
 import PageHeader from "../components/layout/PageHeader";
 import Card from "../components/ui/Card";
 import Btn from "../components/ui/Btn";
@@ -22,6 +22,7 @@ export default function CreateAd() {
   const fileInputRef = useRef(null);
   const [checking, setChecking] = useState(true);
   const [subscription, setSubscription] = useState(null);
+  const [hasMedia, setHasMedia] = useState(null); // null = not chosen yet, true = has own photos/video, false = needs admin design
   const [images, setImages] = useState([]);
   const [form, setForm] = useState({ title: "", category: "Vehicles", subcategory: "", description: "", price: "", location: "", city: "", state: "", pincode: "", phone: "", whatsapp: "", email: "" });
   const [error, setError] = useState("");
@@ -51,9 +52,10 @@ export default function CreateAd() {
     e.preventDefault();
     setError("");
     if (!form.title || !form.category) return setError("Title and category are required.");
+    if (hasMedia && images.length === 0) return setError("Add at least one photo, or go back and choose \"design one for me\".");
     setLoading(true);
     try {
-      await adsApi.create({ ...form, price: Number(form.price) || undefined, images });
+      await adsApi.create({ ...form, price: Number(form.price) || undefined, images, needsMediaDesign: !hasMedia });
       setDone(true);
     } catch (err) {
       setError(err.message);
@@ -69,16 +71,46 @@ export default function CreateAd() {
       <div className="max-w-2xl mx-auto px-5 sm:px-8 py-16 text-center">
         <CheckCircle2 size={36} className="text-emerald-500 mx-auto mb-4" />
         <h2 className="font-display font-semibold text-xl text-slate-900 dark:text-white">Advertisement submitted</h2>
-        <p className="text-sm text-slate-400 mt-2">It'll appear in the Advertisement Hub once approved.</p>
+        <p className="text-sm text-slate-400 mt-2">
+          {hasMedia
+            ? "It'll appear in the Advertisement Hub once approved."
+            : "Our team will design a banner for you and get in touch before it goes live."}
+        </p>
         <Btn variant="primary" className="mt-6" onClick={() => navigate("/")}>Back to home</Btn>
       </div>
     );
   }
 
+  // Step 0 — before any form field, ask whether they already have media ready.
+  if (hasMedia === null) {
+    return (
+      <>
+        <PageHeader eyebrow="Post an Ad" title="Do you have photos or a video ready?" subtitle="Choose how you'd like to add media for your advertisement." />
+        <div className="max-w-2xl mx-auto px-5 sm:px-8 py-10 grid sm:grid-cols-2 gap-5">
+          <Card className="p-6 text-center cursor-pointer" onClick={() => setHasMedia(true)}>
+            <ImagePlus size={28} className="mx-auto text-indigo-500 mb-3" />
+            <h3 className="font-display font-semibold text-slate-900 dark:text-white">I have my own photos/video</h3>
+            <p className="text-sm text-slate-400 mt-2">Upload them yourself and publish right away (pending admin approval).</p>
+          </Card>
+          <Card className="p-6 text-center cursor-pointer" onClick={() => setHasMedia(false)}>
+            <PenSquare size={28} className="mx-auto text-amber-500 mb-3" />
+            <h3 className="font-display font-semibold text-slate-900 dark:text-white">I don't have media — design one for me</h3>
+            <p className="text-sm text-slate-400 mt-2">Submit your ad details now. Our team will create a banner/photo and add it before it goes live.</p>
+          </Card>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
-      <PageHeader eyebrow="Post an Ad" title="Create your advertisement" subtitle={`Your plan allows ${subscription?.plan?.adLimit} ad(s), up to ${subscription?.plan?.photoLimit} photos and ${subscription?.plan?.videoLimit} video(s). Used so far: ${subscription?.adsUsed ?? 0}.`} />
+      <PageHeader
+        eyebrow="Post an Ad"
+        title="Create your advertisement"
+        subtitle={`Your plan allows ${subscription?.plan?.adLimit} ad(s), up to ${subscription?.plan?.photoLimit} photos and ${subscription?.plan?.videoLimit} video(s). Used so far: ${subscription?.adsUsed ?? 0}.`}
+      />
       <div className="max-w-2xl mx-auto px-5 sm:px-8 py-10">
+        <button onClick={() => setHasMedia(null)} className="text-xs font-medium text-indigo-600 dark:text-indigo-400 mb-4">← Change media choice</button>
         <Card className="p-6 sm:p-8" hover={false}>
           <form onSubmit={submit} className="space-y-4">
             <input required value={form.title} onChange={update("title")} placeholder="Advertisement title" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/15 bg-slate-50 dark:bg-white/5 text-sm outline-none focus:ring-2 ring-indigo-400 text-slate-700 dark:text-slate-200" />
@@ -104,24 +136,30 @@ export default function CreateAd() {
               <input value={form.email} onChange={update("email")} placeholder="Email" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/15 bg-slate-50 dark:bg-white/5 text-sm outline-none focus:ring-2 ring-indigo-400 text-slate-700 dark:text-slate-200" />
             </div>
 
-            <div>
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Photos ({images.length}/{photoLimit})</p>
-              <div className="grid grid-cols-4 gap-3">
-                {images.map((src, i) => (
-                  <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-white/10">
-                    <img src={src} className="w-full h-full object-cover" alt={`Upload ${i + 1}`} />
-                    <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center"><X size={12} /></button>
-                  </div>
-                ))}
-                {images.length < photoLimit && (
-                  <button type="button" onClick={() => fileInputRef.current?.click()} className="aspect-square rounded-xl border-2 border-dashed border-slate-200 dark:border-white/15 flex flex-col items-center justify-center gap-1 text-slate-400 hover:border-indigo-400 hover:text-indigo-500">
-                    <Camera size={18} />
-                    <span className="text-[11px] font-medium">Add</span>
-                  </button>
-                )}
+            {hasMedia ? (
+              <div>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Photos ({images.length}/{photoLimit})</p>
+                <div className="grid grid-cols-4 gap-3">
+                  {images.map((src, i) => (
+                    <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-white/10">
+                      <img src={src} className="w-full h-full object-cover" alt={`Upload ${i + 1}`} />
+                      <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center"><X size={12} /></button>
+                    </div>
+                  ))}
+                  {images.length < photoLimit && (
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="aspect-square rounded-xl border-2 border-dashed border-slate-200 dark:border-white/15 flex flex-col items-center justify-center gap-1 text-slate-400 hover:border-indigo-400 hover:text-indigo-500">
+                      <Camera size={18} />
+                      <span className="text-[11px] font-medium">Add</span>
+                    </button>
+                  )}
+                </div>
+                <input ref={fileInputRef} type="file" accept="image/*" multiple hidden onChange={(e) => e.target.files && addFiles(e.target.files)} />
               </div>
-              <input ref={fileInputRef} type="file" accept="image/*" multiple hidden onChange={(e) => e.target.files && addFiles(e.target.files)} />
-            </div>
+            ) : (
+              <div className="rounded-xl bg-amber-50 dark:bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-400">
+                No media needed right now — our team will design a banner/photo from these details and add it before your ad goes live.
+              </div>
+            )}
 
             {error && <p className="text-xs text-rose-500">{error}</p>}
             <Btn variant="primary" className="w-full" type="submit" disabled={loading}>{loading ? "Publishing…" : "Publish advertisement"}</Btn>

@@ -15,6 +15,8 @@ export default {
         fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
         fadeUp: { from: { opacity: 0, transform: "translateY(8px)" }, to: { opacity: 1, transform: "translateY(0)" } },
         scaleIn: { from: { opacity: 0, transform: "scale(0.95)" }, to: { opacity: 1, transform: "scale(1)" } },
+        slideInRight: { from: { transform: "translateX(100%)", opacity: 0.4 }, to: { transform: "translateX(0)", opacity: 1 } },
+        slideInLeft: { from: { transform: "translateX(-100%)", opacity: 0.4 }, to: { transform: "translateX(0)", opacity: 1 } },
       },
       animation: {
         marquee: "marquee 28s linear infinite",
@@ -22,6 +24,8 @@ export default {
         fadeIn: "fadeIn 0.4s ease",
         fadeUp: "fadeUp 0.25s ease",
         scaleIn: "scaleIn 0.25s ease",
+        slideInRight: "slideInRight 0.6s cubic-bezier(0.22, 1, 0.36, 1)",
+        slideInLeft: "slideInLeft 0.6s cubic-bezier(0.22, 1, 0.36, 1)",
       },
     },
   },

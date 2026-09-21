@@ -4,8 +4,9 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import Btn from "./ui/Btn";
 
-export default function RoleCard({ icon: Icon, title, description, features, to, delay = 0 }) {
+export default function RoleCard({ icon: Icon, title, description, features, to, onAction, delay = 0 }) {
   const navigate = useNavigate();
+  const handleClick = onAction ? () => onAction(navigate) : () => navigate(to);
   return (
     <motion.div
       initial={{ opacity: 0, y: 25 }}
@@ -26,7 +27,7 @@ export default function RoleCard({ icon: Icon, title, description, features, to,
           </li>
         ))}
       </ul>
-      <Btn variant="outline" className="mt-6 w-full" onClick={() => navigate(to)}>Get started</Btn>
+      <Btn variant="outline" className="mt-6 w-full" onClick={handleClick}>Get started</Btn>
     </motion.div>
   );
 }

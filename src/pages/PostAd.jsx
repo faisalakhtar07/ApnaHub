@@ -90,7 +90,7 @@ export default function PostAd() {
 
   return (
     <>
-      <PageHeader eyebrow="Sell on APNAHUB" title="Post an Ad" subtitle="List your item in a few steps — free, and no account needed to get started." />
+      <PageHeader eyebrow="Sell on APNAHUB" title="List an Item for Sale" subtitle="List your item in a few steps — free, and no account needed to get started." />
       <div className="max-w-2xl mx-auto px-5 sm:px-8 py-10">
         <div className="flex items-center gap-2 mb-8">
           {["Details", "Photos", "Verify"].map((label, i) => (

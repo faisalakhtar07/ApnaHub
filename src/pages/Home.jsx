@@ -13,6 +13,8 @@ import Reveal from "../components/ui/Reveal";
 import SectionHead from "../components/ui/SectionHead";
 import SectionHeading from "../components/SectionHeading";
 import RoleCard from "../components/RoleCard";
+import AdvertisementHub from "../components/AdvertisementHub";
+import { goToPostAd } from "../lib/postAdFlow";
 import RevealImage from "../components/RevealImage";
 import HowItWorks from "../components/HowItWorks";
 import BusinessCard from "../components/BusinessCard";
@@ -391,7 +393,7 @@ const ROLES = [
     title: "For Sellers",
     description: "Post your item and reach genuine local buyers, free.",
     features: ["List in under 2 minutes", "Just a phone number to start", "No commission, ever", "Buyer questions land in your inbox"],
-    to: "/post-ad",
+    onAction: goToPostAd,
   },
   {
     icon: Users,
@@ -435,7 +437,7 @@ function StorySection() {
           <p className="mt-6 max-w-xl text-sm leading-relaxed text-slate-500 dark:text-slate-400 md:text-base">
             APNAHUB connects sellers, buyers, and local businesses through a transparent marketplace designed specifically for Aurangabad — no middlemen, no commission.
           </p>
-          <div className="mt-8"><Btn variant="primary" icon={UserPlus} onClick={() => navigate("/post-ad")}>Post your first ad</Btn></div>
+          <div className="mt-8"><Btn variant="primary" icon={UserPlus} onClick={() => goToPostAd(navigate)}>Start Selling Today</Btn></div>
         </Reveal>
       </div>
     </section>
@@ -445,6 +447,7 @@ function StorySection() {
 export default function Home() {
   return (
     <>
+      <AdvertisementHub />
       <Hero />
       <PulseTicker />
       <CategoriesSection />

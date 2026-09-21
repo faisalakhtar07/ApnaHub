@@ -151,3 +151,10 @@ export const adsApi = {
   setStatus: (id, status) => request(`/ads/${id}/status`, { method: "PATCH", body: JSON.stringify({ status }), headers: authHeader() }),
   toggleFeature: (id) => request(`/ads/${id}/feature`, { method: "PATCH", headers: authHeader() }),
 };
+
+/** In-app notifications for the logged-in user (buyer inquiries, ad status changes, etc). */
+export const notificationsApi = {
+  mine: () => request("/notifications", { headers: userAuthHeader() }),
+  markRead: (id) => request(`/notifications/${id}/read`, { method: "PATCH", headers: userAuthHeader() }),
+  markAllRead: () => request("/notifications/read-all", { method: "PATCH", headers: userAuthHeader() }),
+};
