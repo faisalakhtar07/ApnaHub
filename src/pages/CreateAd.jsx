@@ -4,18 +4,10 @@ import { Camera, X, CheckCircle2, ImagePlus, PenSquare } from "lucide-react";
 import PageHeader from "../components/layout/PageHeader";
 import Card from "../components/ui/Card";
 import Btn from "../components/ui/Btn";
-import { subscriptionsApi, adsApi, userAuthApi } from "../lib/api";
+import { subscriptionsApi, adsApi, uploadApi, userAuthApi } from "../lib/api";
+import { compressImageFile } from "../lib/imageCompress";
 
 const CATEGORIES = ["Vehicles", "Electronics", "Furniture", "Fashion", "Property", "Services", "Other"];
-
-function fileToDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
 
 export default function CreateAd() {
   const navigate = useNavigate();
@@ -24,6 +16,7 @@ export default function CreateAd() {
   const [subscription, setSubscription] = useState(null);
   const [hasMedia, setHasMedia] = useState(null); // null = not chosen yet, true = has own photos/video, false = needs admin design
   const [images, setImages] = useState([]);
+  const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({ title: "", category: "Vehicles", subcategory: "", description: "", price: "", location: "", city: "", state: "", pincode: "", phone: "", whatsapp: "", email: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -43,8 +36,22 @@ export default function CreateAd() {
 
   const addFiles = async (fileList) => {
     const files = Array.from(fileList).slice(0, photoLimit - images.length);
-    const dataUrls = await Promise.all(files.map(fileToDataUrl));
-    setImages((prev) => [...prev, ...dataUrls].slice(0, photoLimit));
+    if (!files.length) return;
+    setUploading(true);
+    setError("");
+    try {
+      const urls = [];
+      for (const file of files) {
+        const blob = await compressImageFile(file);
+        const { url } = await uploadApi.file(blob, file.name);
+        urls.push(url);
+      }
+      setImages((prev) => [...prev, ...urls].slice(0, photoLimit));
+    } catch (err) {
+      setError(err.message || "Photo upload failed. Check your connection and try again.");
+    } finally {
+      setUploading(false);
+    }
   };
   const removeImage = (i) => setImages((prev) => prev.filter((_, idx) => idx !== i));
 
@@ -147,9 +154,9 @@ export default function CreateAd() {
                     </div>
                   ))}
                   {images.length < photoLimit && (
-                    <button type="button" onClick={() => fileInputRef.current?.click()} className="aspect-square rounded-xl border-2 border-dashed border-slate-200 dark:border-white/15 flex flex-col items-center justify-center gap-1 text-slate-400 hover:border-indigo-400 hover:text-indigo-500">
+                    <button type="button" disabled={uploading} onClick={() => fileInputRef.current?.click()} className="aspect-square rounded-xl border-2 border-dashed border-slate-200 dark:border-white/15 flex flex-col items-center justify-center gap-1 text-slate-400 hover:border-indigo-400 hover:text-indigo-500 disabled:opacity-50">
                       <Camera size={18} />
-                      <span className="text-[11px] font-medium">Add</span>
+                      <span className="text-[11px] font-medium">{uploading ? "Uploading…" : "Add"}</span>
                     </button>
                   )}
                 </div>
@@ -161,8 +168,15 @@ export default function CreateAd() {
               </div>
             )}
 
-            {error && <p className="text-xs text-rose-500">{error}</p>}
-            <Btn variant="primary" className="w-full" type="submit" disabled={loading}>{loading ? "Publishing…" : "Publish advertisement"}</Btn>
+            {error && (
+              <div className="rounded-xl bg-rose-50 dark:bg-rose-500/10 px-4 py-3 text-sm text-rose-600 dark:text-rose-400">
+                <p>{error}</p>
+                {/^(No active advertisement subscription|Your plan allows)/.test(error) && (
+                  <Btn variant="danger" size="sm" className="mt-2" onClick={() => navigate("/subscribe")}>View subscription plans</Btn>
+                )}
+              </div>
+            )}
+            <Btn variant="primary" className="w-full" type="submit" disabled={loading || uploading}>{loading ? "Publishing…" : "Publish advertisement"}</Btn>
           </form>
         </Card>
       </div>

@@ -19,7 +19,7 @@ export default function Login() {
     setLoading(true);
     try {
       await userAuthApi.login(phone, password);
-      navigate("/profile");
+      navigate("/my-account");
     } catch (err) {
       setError(err.message);
     } finally {

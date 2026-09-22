@@ -18,7 +18,7 @@ export default function Register() {
     setLoading(true);
     try {
       await userAuthApi.register(form);
-      navigate("/profile");
+      navigate("/my-account");
     } catch (err) {
       setError(err.message);
     } finally {

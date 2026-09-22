@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { Menu, X, Sun, Moon, User } from "lucide-react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { Menu, X, Sun, Moon, LayoutDashboard, LogOut } from "lucide-react";
 import Btn from "../ui/Btn";
 import NotificationBell from "../NotificationBell";
 import { goToPostAd as sharedGoToPostAd } from "../../lib/postAdFlow";
+import { userAuthApi } from "../../lib/api";
 
 const LINKS = [
   { label: "Home", to: "/" },
@@ -19,11 +20,30 @@ export default function Navbar({ dark, toggleTheme }) {
   const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(userAuthApi.isLoggedIn());
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Navbar persists across client-side route changes, so it won't automatically
+  // notice a login/logout that happened on another page — re-check whenever the
+  // route changes (login/register/logout all navigate somewhere right after).
+  useEffect(() => {
+    setLoggedIn(userAuthApi.isLoggedIn());
+  }, [location.pathname]);
+
+  const user = userAuthApi.currentUser();
 
   // Post an Ad now opens the subscription-based advertising system (not the older
   // guest Buy & Sell posting flow at /post-ad, which stays reachable from Buy & Sell itself).
   const goToPostAd = () => sharedGoToPostAd(navigate);
+
+  const handleLogout = () => {
+    userAuthApi.logout();
+    setLoggedIn(false);
+    setProfileOpen(false);
+    setOpen(false);
+    navigate("/");
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -73,35 +93,48 @@ export default function Navbar({ dark, toggleTheme }) {
             {dark ? <Sun size={17} /> : <Moon size={17} />}
           </button>
 
-          <NotificationBell />
+          {loggedIn && <NotificationBell />}
 
           <div className="hidden md:flex items-center gap-2 ml-1">
             <Btn variant="marigold" size="sm" onClick={goToPostAd}>Post an Ad</Btn>
-            <Btn variant="ghost" size="sm" onClick={() => navigate("/login")}>Log in</Btn>
-            <Btn variant="primary" size="sm" onClick={() => navigate("/register")}>Register</Btn>
-          </div>
-
-          <div className="relative hidden md:block">
-            <button
-              onClick={() => setProfileOpen((p) => !p)}
-              className="w-9 h-9 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center ml-1 hover:ring-2 ring-indigo-400/40 transition-all"
-            >
-              <User size={16} className="text-slate-600 dark:text-slate-200" />
-            </button>
-            {profileOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#131B2E] border border-slate-100 dark:border-white/10 rounded-2xl shadow-xl py-2 animate-fadeUp">
-                {["Profile", "Saved Items", "My Listings", "Settings"].map((it) => (
-                  <button
-                    key={it}
-                    onClick={() => { setProfileOpen(false); navigate("/profile"); }}
-                    className="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5"
-                  >
-                    {it}
-                  </button>
-                ))}
-              </div>
+            {!loggedIn && (
+              <>
+                <Btn variant="ghost" size="sm" onClick={() => navigate("/login")}>Log in</Btn>
+                <Btn variant="primary" size="sm" onClick={() => navigate("/register")}>Register</Btn>
+              </>
             )}
           </div>
+
+          {loggedIn && (
+            <div className="relative hidden md:block">
+              <button
+                onClick={() => setProfileOpen((p) => !p)}
+                className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-400 flex items-center justify-center ml-1 hover:ring-2 ring-indigo-400/40 transition-all font-display font-bold text-white text-sm"
+              >
+                {(user?.name || "U").charAt(0).toUpperCase()}
+              </button>
+              {profileOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#131B2E] border border-slate-100 dark:border-white/10 rounded-2xl shadow-xl py-2 animate-fadeUp">
+                  <div className="px-4 py-2 border-b border-slate-100 dark:border-white/10 mb-1">
+                    <p className="text-sm font-medium text-slate-800 dark:text-white truncate">{user?.name || "Account"}</p>
+                    <p className="text-xs text-slate-400 truncate">{user?.phone}</p>
+                  </div>
+                  <button
+                    onClick={() => { setProfileOpen(false); navigate("/my-account"); }}
+                    className="w-full flex items-center gap-2 text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5"
+                  >
+                    <LayoutDashboard size={14} /> Dashboard
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2 text-left px-4 py-2 text-sm text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10"
+                  >
+                    <LogOut size={14} /> Log out
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
           <button onClick={() => setOpen((o) => !o)} className="lg:hidden w-9 h-9 flex items-center justify-center text-slate-700 dark:text-white">
             {open ? <X size={20} /> : <Menu size={20} />}
@@ -126,10 +159,17 @@ export default function Navbar({ dark, toggleTheme }) {
               </NavLink>
             ))}
             <Btn variant="marigold" className="mt-1" onClick={() => { goToPostAd(); setOpen(false); }}>Post an Ad</Btn>
-            <div className="flex gap-2 mt-3">
-              <Btn variant="outline" className="flex-1" onClick={() => { navigate("/login"); setOpen(false); }}>Log in</Btn>
-              <Btn variant="primary" className="flex-1" onClick={() => { navigate("/register"); setOpen(false); }}>Register</Btn>
-            </div>
+            {loggedIn ? (
+              <>
+                <Btn variant="outline" className="mt-2" icon={LayoutDashboard} onClick={() => { navigate("/my-account"); setOpen(false); }}>Dashboard</Btn>
+                <Btn variant="ghost" className="mt-2 !text-rose-500" icon={LogOut} onClick={handleLogout}>Log out</Btn>
+              </>
+            ) : (
+              <div className="flex gap-2 mt-3">
+                <Btn variant="outline" className="flex-1" onClick={() => { navigate("/login"); setOpen(false); }}>Log in</Btn>
+                <Btn variant="primary" className="flex-1" onClick={() => { navigate("/register"); setOpen(false); }}>Register</Btn>
+              </div>
+            )}
           </div>
         </div>
       )}

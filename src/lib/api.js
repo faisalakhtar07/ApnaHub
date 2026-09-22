@@ -119,6 +119,24 @@ export const inquiriesApi = {
   markRead: (id) => request(`/inquiries/${id}/read`, { method: "PATCH", headers: userAuthHeader() }),
 };
 
+/** Uploads a photo/video (as a Blob/File) to Cloudinary via the backend; returns { url }. */
+export const uploadApi = {
+  file: async (blob, filename = "upload.jpg") => {
+    const formData = new FormData();
+    formData.append("file", blob, filename);
+    const res = await fetch(`${API_URL}/upload`, {
+      method: "POST",
+      headers: userAuthHeader(), // no Content-Type — the browser sets the correct multipart boundary itself
+      body: formData,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || `Upload failed (${res.status})`);
+    }
+    return res.json();
+  },
+};
+
 /** Platform-wide settings admin controls (ad slide duration, autoplay, commissions, etc.). */
 export const platformSettingsApi = {
   get: () => request("/admin/settings"),

@@ -4,30 +4,24 @@ import { Camera, X, ShieldCheck, CheckCircle2, ArrowLeft } from "lucide-react";
 import PageHeader from "../components/layout/PageHeader";
 import Card from "../components/ui/Card";
 import Btn from "../components/ui/Btn";
-import { sellerAuthApi, sellerListingsApi } from "../lib/api";
+import { sellerAuthApi, sellerListingsApi, uploadApi } from "../lib/api";
+import { compressImageFile } from "../lib/imageCompress";
 
 const CATEGORIES = ["Vehicles", "Electronics", "Furniture", "Fashion", "Books & Hobbies", "Other"];
 const CONDITIONS = ["New", "Used – Excellent", "Used – Good", "Used – Fair"];
 const MAX_IMAGES = 6;
 
-function fileToDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
 export default function PostAd() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
-  const [step, setStep] = useState(1); // 1: details, 2: photos, 3: verify phone, 4: done
+  // 1: details, 2: verify phone (required before upload, since uploads need a logged-in user), 3: photos, 4: done
+  const [step, setStep] = useState(1);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const [details, setDetails] = useState({ title: "", category: "Vehicles", price: "", cond: "Used – Good", loc: "Aurangabad" });
   const [images, setImages] = useState([]);
+  const [uploading, setUploading] = useState(false);
 
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
@@ -39,8 +33,22 @@ export default function PostAd() {
 
   const addFiles = async (fileList) => {
     const files = Array.from(fileList).slice(0, MAX_IMAGES - images.length);
-    const dataUrls = await Promise.all(files.map(fileToDataUrl));
-    setImages((prev) => [...prev, ...dataUrls].slice(0, MAX_IMAGES));
+    if (!files.length) return;
+    setUploading(true);
+    setError("");
+    try {
+      const urls = [];
+      for (const file of files) {
+        const blob = await compressImageFile(file);
+        const { url } = await uploadApi.file(blob, file.name);
+        urls.push(url);
+      }
+      setImages((prev) => [...prev, ...urls].slice(0, MAX_IMAGES));
+    } catch (err) {
+      setError(err.message || "Photo upload failed. Check your connection and try again.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const removeImage = (i) => setImages((prev) => prev.filter((_, idx) => idx !== i));
@@ -50,12 +58,6 @@ export default function PostAd() {
     if (!details.title || !details.price) return setError("Title and price are required.");
     setError("");
     setStep(2);
-  };
-
-  const goNextFromPhotos = () => {
-    if (images.length < 1) return setError("Add at least one photo (up to 6).");
-    setError("");
-    setStep(3);
   };
 
   const requestOtp = async (e) => {
@@ -73,12 +75,25 @@ export default function PostAd() {
     }
   };
 
-  const verifyAndSubmit = async (e) => {
+  const verifyAndContinue = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
       await sellerAuthApi.verifyOtp(phone, otp, name);
+      setStep(3);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const publish = async () => {
+    setError("");
+    if (images.length < 1) return setError("Add at least one photo (up to 6).");
+    setLoading(true);
+    try {
       await sellerListingsApi.create({ ...details, images });
       setStep(4);
     } catch (err) {
@@ -93,7 +108,7 @@ export default function PostAd() {
       <PageHeader eyebrow="Sell on APNAHUB" title="List an Item for Sale" subtitle="List your item in a few steps — free, and no account needed to get started." />
       <div className="max-w-2xl mx-auto px-5 sm:px-8 py-10">
         <div className="flex items-center gap-2 mb-8">
-          {["Details", "Photos", "Verify"].map((label, i) => (
+          {["Details", "Verify", "Photos"].map((label, i) => (
             <React.Fragment key={label}>
               <div className={`flex items-center gap-2 text-sm font-medium ${step >= i + 1 ? "text-indigo-600 dark:text-indigo-400" : "text-slate-300 dark:text-slate-600"}`}>
                 <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step >= i + 1 ? "bg-indigo-600 text-white" : "bg-slate-100 dark:bg-white/10"}`}>{i + 1}</span>
@@ -136,45 +151,15 @@ export default function PostAd() {
                 </div>
               </div>
               {error && <p className="text-xs text-rose-500">{error}</p>}
-              <Btn variant="primary" className="w-full" type="submit" iconRight>Continue to photos</Btn>
+              <Btn variant="primary" className="w-full" type="submit" iconRight>Continue to verify</Btn>
             </form>
           )}
 
           {step === 2 && (
-            <div className="space-y-4">
-              <p className="text-sm text-slate-500 dark:text-slate-400">Add {MAX_IMAGES - images.length > 0 ? `up to ${MAX_IMAGES - images.length} more` : "up to 6"} photos. The first photo becomes the cover image.</p>
-              <div className="grid grid-cols-3 gap-3">
-                {images.map((src, i) => (
-                  <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-white/10">
-                    <img src={src} className="w-full h-full object-cover" alt={`Upload ${i + 1}`} />
-                    {i === 0 && <span className="absolute bottom-1 left-1 bg-indigo-600 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">Cover</span>}
-                    <button onClick={() => removeImage(i)} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center"><X size={12} /></button>
-                  </div>
-                ))}
-                {images.length < MAX_IMAGES && (
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="aspect-square rounded-xl border-2 border-dashed border-slate-200 dark:border-white/15 flex flex-col items-center justify-center gap-1 text-slate-400 hover:border-indigo-400 hover:text-indigo-500 transition-colors"
-                  >
-                    <Camera size={20} />
-                    <span className="text-xs font-medium">Add photo</span>
-                  </button>
-                )}
-              </div>
-              <input ref={fileInputRef} type="file" accept="image/*" multiple hidden onChange={(e) => e.target.files && addFiles(e.target.files)} />
-              {error && <p className="text-xs text-rose-500">{error}</p>}
-              <div className="flex gap-3">
-                <Btn variant="outline" icon={ArrowLeft} onClick={() => setStep(1)}>Back</Btn>
-                <Btn variant="primary" className="flex-1" iconRight onClick={goNextFromPhotos}>Continue to verify</Btn>
-              </div>
-            </div>
-          )}
-
-          {step === 3 && (
-            <form onSubmit={otpSent ? verifyAndSubmit : requestOtp} className="space-y-4">
+            <form onSubmit={otpSent ? verifyAndContinue : requestOtp} className="space-y-4">
               <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 mb-2">
                 <ShieldCheck size={18} />
-                <p className="text-sm font-semibold">Verify your phone to publish</p>
+                <p className="text-sm font-semibold">Verify your phone to continue</p>
               </div>
               {!otpSent ? (
                 <>
@@ -190,12 +175,45 @@ export default function PostAd() {
               )}
               {error && <p className="text-xs text-rose-500">{error}</p>}
               <div className="flex gap-3">
-                <Btn variant="outline" icon={ArrowLeft} onClick={() => (otpSent ? setOtpSent(false) : setStep(2))} type="button">Back</Btn>
+                <Btn variant="outline" icon={ArrowLeft} onClick={() => (otpSent ? setOtpSent(false) : setStep(1))} type="button">Back</Btn>
                 <Btn variant="primary" className="flex-1" type="submit" disabled={loading} iconRight={!loading}>
-                  {loading ? "Please wait…" : otpSent ? "Verify & publish" : "Send OTP"}
+                  {loading ? "Please wait…" : otpSent ? "Verify & continue" : "Send OTP"}
                 </Btn>
               </div>
             </form>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-4">
+              <p className="text-sm text-slate-500 dark:text-slate-400">Add {MAX_IMAGES - images.length > 0 ? `up to ${MAX_IMAGES - images.length} more` : "up to 6"} photos. The first photo becomes the cover image.</p>
+              <div className="grid grid-cols-3 gap-3">
+                {images.map((src, i) => (
+                  <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-white/10">
+                    <img src={src} className="w-full h-full object-cover" alt={`Upload ${i + 1}`} />
+                    {i === 0 && <span className="absolute bottom-1 left-1 bg-indigo-600 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">Cover</span>}
+                    <button onClick={() => removeImage(i)} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center"><X size={12} /></button>
+                  </div>
+                ))}
+                {images.length < MAX_IMAGES && (
+                  <button
+                    disabled={uploading}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="aspect-square rounded-xl border-2 border-dashed border-slate-200 dark:border-white/15 flex flex-col items-center justify-center gap-1 text-slate-400 hover:border-indigo-400 hover:text-indigo-500 transition-colors disabled:opacity-50"
+                  >
+                    <Camera size={20} />
+                    <span className="text-xs font-medium">{uploading ? "Uploading…" : "Add photo"}</span>
+                  </button>
+                )}
+              </div>
+              <input ref={fileInputRef} type="file" accept="image/*" multiple hidden onChange={(e) => e.target.files && addFiles(e.target.files)} />
+              {error && <p className="text-xs text-rose-500">{error}</p>}
+              <div className="flex gap-3">
+                <Btn variant="outline" icon={ArrowLeft} onClick={() => setStep(2)}>Back</Btn>
+                <Btn variant="primary" className="flex-1" onClick={publish} disabled={loading || uploading}>
+                  {loading ? "Publishing…" : "Publish listing"}
+                </Btn>
+              </div>
+            </div>
           )}
 
           {step === 4 && (
