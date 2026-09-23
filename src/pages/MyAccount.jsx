@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Trash2, MessageSquareText, Package, LogOut, Phone, LayoutDashboard, Megaphone, Bell, Check, ImagePlus } from "lucide-react";
+import { Trash2, MessageSquareText, Package, LogOut, Phone, LayoutDashboard, Megaphone, Bell, Check, ImagePlus, Building2, Briefcase, CheckCircle2 } from "lucide-react";
 import Card from "../components/ui/Card";
 import Badge from "../components/ui/Badge";
 import Btn from "../components/ui/Btn";
-import { userAuthApi, sellerListingsApi, inquiriesApi, adsApi, notificationsApi } from "../lib/api";
+import { userAuthApi, sellerListingsApi, inquiriesApi, adsApi, notificationsApi, businessesApi, jobsApi } from "../lib/api";
 
-const LISTING_STATUS_TONE = { approved: "open", pending: "soon", rejected: "closed" };
+const LISTING_STATUS_TONE = { approved: "open", pending: "soon", rejected: "closed", sold: "neutral" };
 const AD_STATUS_TONE = { pending: "soon", approved: "open", active: "open", rejected: "closed", suspended: "closed", expired: "neutral", draft: "neutral" };
+const STATUS_TONE = { pending: "soon", approved: "open", rejected: "closed", suspended: "closed", closed: "neutral" };
 
 export default function MyAccount() {
   const navigate = useNavigate();
@@ -16,14 +17,16 @@ export default function MyAccount() {
   const [listings, setListings] = useState([]);
   const [inquiries, setInquiries] = useState([]);
   const [ads, setAds] = useState([]);
+  const [businesses, setBusinesses] = useState([]);
+  const [jobs, setJobs] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const user = userAuthApi.currentUser();
 
   const load = () => {
     setLoading(true);
-    Promise.all([sellerListingsApi.mine(), inquiriesApi.mine(), adsApi.mine(), notificationsApi.mine()])
-      .then(([l, i, a, n]) => { setListings(l); setInquiries(i); setAds(a); setNotifications(n); })
+    Promise.all([sellerListingsApi.mine(), inquiriesApi.mine(), adsApi.mine(), notificationsApi.mine(), businessesApi.mine(), jobsApi.mine()])
+      .then(([l, i, a, n, biz, jb]) => { setListings(l); setInquiries(i); setAds(a); setNotifications(n); setBusinesses(biz); setJobs(jb); })
       .finally(() => setLoading(false));
   };
 
@@ -36,6 +39,28 @@ export default function MyAccount() {
   const removeListing = async (id) => {
     if (!window.confirm("Delete this listing?")) return;
     await sellerListingsApi.remove(id);
+    load();
+  };
+
+  const markSold = async (id) => {
+    await sellerListingsApi.markSold(id);
+    load();
+  };
+
+  const removeBusiness = async (id) => {
+    if (!window.confirm("Delete this business?")) return;
+    await businessesApi.remove(id);
+    load();
+  };
+
+  const removeJob = async (id) => {
+    if (!window.confirm("Delete this job post?")) return;
+    await jobsApi.remove(id);
+    load();
+  };
+
+  const closeJob = async (id) => {
+    await jobsApi.close(id);
     load();
   };
 
@@ -65,6 +90,8 @@ export default function MyAccount() {
   const TABS = [
     ["overview", "Overview", LayoutDashboard, 0],
     ["listings", "My Listings", Package, 0],
+    ["businesses", "My Businesses", Building2, 0],
+    ["jobs", "My Jobs", Briefcase, 0],
     ["ads", "My Ads", Megaphone, needsMediaCount],
     ["inquiries", "Inquiries", MessageSquareText, unreadInquiries],
     ["notifications", "Notifications", Bell, unreadNotifications],
@@ -110,25 +137,86 @@ export default function MyAccount() {
               </div>
             </div>
           </Card>
-          <div className="grid sm:grid-cols-3 gap-4">
-            <Card className="p-5 text-center" hover={false}><p className="font-display font-bold text-2xl text-slate-900 dark:text-white">{listings.length}</p><p className="text-xs text-slate-400 mt-1">Buy & Sell listings</p></Card>
-            <Card className="p-5 text-center" hover={false}><p className="font-display font-bold text-2xl text-slate-900 dark:text-white">{ads.length}</p><p className="text-xs text-slate-400 mt-1">Advertisements</p></Card>
-            <Card className="p-5 text-center" hover={false}><p className="font-display font-bold text-2xl text-slate-900 dark:text-white">{inquiries.length}</p><p className="text-xs text-slate-400 mt-1">Buyer inquiries</p></Card>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+            <Card className="p-4 text-center" hover={false}><p className="font-display font-bold text-xl text-slate-900 dark:text-white">{listings.length}</p><p className="text-xs text-slate-400 mt-1">Listings</p></Card>
+            <Card className="p-4 text-center" hover={false}><p className="font-display font-bold text-xl text-slate-900 dark:text-white">{businesses.length}</p><p className="text-xs text-slate-400 mt-1">Businesses</p></Card>
+            <Card className="p-4 text-center" hover={false}><p className="font-display font-bold text-xl text-slate-900 dark:text-white">{jobs.length}</p><p className="text-xs text-slate-400 mt-1">Job posts</p></Card>
+            <Card className="p-4 text-center" hover={false}><p className="font-display font-bold text-xl text-slate-900 dark:text-white">{ads.length}</p><p className="text-xs text-slate-400 mt-1">Ads</p></Card>
+            <Card className="p-4 text-center" hover={false}><p className="font-display font-bold text-xl text-slate-900 dark:text-white">{inquiries.length}</p><p className="text-xs text-slate-400 mt-1">Inquiries</p></Card>
           </div>
-          <p className="text-xs text-slate-400">My Orders, My Applications, and Bookings will appear here once those features launch.</p>
+          <p className="text-xs text-slate-400">My Orders/Sales and Applications will appear here once those features launch.</p>
         </div>
       ) : tab === "listings" ? (
         <div className="space-y-3">
           {listings.length === 0 && <p className="text-sm text-slate-400">You haven't posted anything yet.</p>}
           {listings.map((l) => (
-            <Card key={l.id} className="p-4 flex items-center gap-4" hover={false}>
-              <img src={l.img} className="w-16 h-16 rounded-xl object-cover shrink-0" alt={l.title} />
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-slate-800 dark:text-white truncate">{l.title}</p>
-                <p className="text-xs text-slate-400">{l.price} · {l.loc}</p>
+            <Card key={l.id} className="p-4" hover={false}>
+              <div className="flex items-center gap-4">
+                <img src={l.img} className="w-16 h-16 rounded-xl object-cover shrink-0" alt={l.title} />
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-slate-800 dark:text-white truncate">{l.title}</p>
+                  <p className="text-xs text-slate-400">{l.price} · {l.loc}</p>
+                </div>
+                <Badge tone={LISTING_STATUS_TONE[l.status] || "neutral"}>{l.status || "approved"}</Badge>
+                {l.status === "approved" && (
+                  <Btn variant="outline" size="sm" icon={CheckCircle2} onClick={() => markSold(l.id)}>Mark sold</Btn>
+                )}
+                <button onClick={() => removeListing(l.id)} className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-500 shrink-0"><Trash2 size={15} /></button>
               </div>
-              <Badge tone={LISTING_STATUS_TONE[l.status] || "neutral"}>{l.status || "approved"}</Badge>
-              <button onClick={() => removeListing(l.id)} className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-500 shrink-0"><Trash2 size={15} /></button>
+              {l.status === "rejected" && l.rejectionReason && (
+                <p className="text-xs text-rose-500 mt-3 pl-20">Rejected: {l.rejectionReason}</p>
+              )}
+            </Card>
+          ))}
+        </div>
+      ) : tab === "businesses" ? (
+        <div className="space-y-3">
+          {businesses.length === 0 && <p className="text-sm text-slate-400">You haven't listed a business yet. Use "List Your Business" from the Businesses page.</p>}
+          {businesses.map((b) => (
+            <Card key={b.id} className="p-4" hover={false}>
+              <div className="flex items-center gap-4">
+                {b.coverImage || b.images?.[0] ? (
+                  <img src={b.coverImage || b.images[0]} className="w-16 h-16 rounded-xl object-cover shrink-0" alt={b.name} />
+                ) : (
+                  <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-300 shrink-0"><Building2 size={18} /></div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-slate-800 dark:text-white truncate">{b.name}</p>
+                  <p className="text-xs text-slate-400">{b.category}{b.city ? ` · ${b.city}` : ""}</p>
+                </div>
+                <Badge tone={STATUS_TONE[b.status] || "neutral"}>{b.status}</Badge>
+                <button onClick={() => removeBusiness(b.id)} className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-500 shrink-0"><Trash2 size={15} /></button>
+              </div>
+              {b.status === "rejected" && b.rejectionReason && (
+                <p className="text-xs text-rose-500 mt-3 pl-20">Rejected: {b.rejectionReason}</p>
+              )}
+            </Card>
+          ))}
+        </div>
+      ) : tab === "jobs" ? (
+        <div className="space-y-3">
+          {jobs.length === 0 && <p className="text-sm text-slate-400">You haven't posted a job yet. Use "Post a Job" from the Jobs page.</p>}
+          {jobs.map((j) => (
+            <Card key={j.id} className="p-4" hover={false}>
+              <div className="flex items-center gap-4">
+                {j.companyLogo ? (
+                  <img src={j.companyLogo} className="w-16 h-16 rounded-xl object-cover shrink-0" alt={j.title} />
+                ) : (
+                  <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-300 shrink-0"><Briefcase size={18} /></div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-slate-800 dark:text-white truncate">{j.title}</p>
+                  <p className="text-xs text-slate-400">{j.companyName}{j.city ? ` · ${j.city}` : ""}</p>
+                </div>
+                <Badge tone={STATUS_TONE[j.status] || "neutral"}>{j.status}</Badge>
+                {j.status === "approved" && (
+                  <Btn variant="outline" size="sm" onClick={() => closeJob(j.id)}>Close</Btn>
+                )}
+                <button onClick={() => removeJob(j.id)} className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-500 shrink-0"><Trash2 size={15} /></button>
+              </div>
+              {j.status === "rejected" && j.rejectionReason && (
+                <p className="text-xs text-rose-500 mt-3 pl-20">Rejected: {j.rejectionReason}</p>
+              )}
             </Card>
           ))}
         </div>

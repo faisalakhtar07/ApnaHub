@@ -60,8 +60,22 @@ function storeUserSession(data) {
   return data;
 }
 
-export const businessesApi = resource("businesses");
-export const jobsApi = resource("jobs");
+export const businessesApi = {
+  ...resource("businesses"),
+  mine: () => request("/businesses/mine/all", { headers: userAuthHeader() }),
+  create: (payload) => request("/businesses", { method: "POST", body: JSON.stringify(payload), headers: userAuthHeader() }),
+  update: (id, payload) => request(`/businesses/${id}`, { method: "PUT", body: JSON.stringify(payload), headers: userAuthHeader() }),
+  remove: (id) => request(`/businesses/${id}`, { method: "DELETE", headers: userAuthHeader() }),
+};
+
+export const jobsApi = {
+  ...resource("jobs"),
+  mine: () => request("/jobs/mine/all", { headers: userAuthHeader() }),
+  create: (payload) => request("/jobs", { method: "POST", body: JSON.stringify(payload), headers: userAuthHeader() }),
+  update: (id, payload) => request(`/jobs/${id}`, { method: "PUT", body: JSON.stringify(payload), headers: userAuthHeader() }),
+  remove: (id) => request(`/jobs/${id}`, { method: "DELETE", headers: userAuthHeader() }),
+  close: (id) => request(`/jobs/${id}/close`, { method: "PATCH", headers: userAuthHeader() }),
+};
 
 const rawListingsApi = resource("listings");
 export const listingsApi = {
@@ -110,6 +124,7 @@ export const sellerListingsApi = {
   create: (payload) => request("/seller/listings", { method: "POST", body: JSON.stringify(payload), headers: userAuthHeader() }),
   update: (id, payload) => request(`/seller/listings/${id}`, { method: "PUT", body: JSON.stringify(payload), headers: userAuthHeader() }),
   remove: (id) => request(`/seller/listings/${id}`, { method: "DELETE", headers: userAuthHeader() }),
+  markSold: (id) => request(`/seller/listings/${id}/sold`, { method: "PATCH", headers: userAuthHeader() }),
 };
 
 /** Buyer → seller inquiries on Buy & Sell listings. Asking is public; reading your inbox needs login. */

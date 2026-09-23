@@ -15,7 +15,10 @@ export default function SearchResults() {
   useEffect(() => {
     Promise.all([businessesApi.list(), listingsApi.list()]).then(([businesses, listings]) => {
       const needle = q.trim().toLowerCase();
-      const pool = [...businesses, ...listings];
+      const pool = [
+        ...businesses.map((b) => ({ ...b, _kind: "business" })),
+        ...listings.map((l) => ({ ...l, _kind: "listing" })),
+      ];
       const filtered = needle
         ? pool.filter((item) => (item.name || item.title || "").toLowerCase().includes(needle))
         : pool;
@@ -30,7 +33,7 @@ export default function SearchResults() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {results.map((item, i) => (
             <Reveal key={`${item.name || item.title}-${i}`} delay={(i % 4) * 70}>
-              {item.rating !== undefined ? <BusinessCard b={item} /> : <ListingCard l={item} />}
+              {item._kind === "business" ? <BusinessCard b={item} /> : <ListingCard l={item} />}
             </Reveal>
           ))}
         </div>

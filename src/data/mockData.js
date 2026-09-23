@@ -15,17 +15,17 @@ export const CATEGORIES = [
 ];
 
 export const BUSINESSES = [
-  { id: 1, name: "Shree Krishna Electronics", cat: "Electronics Store", rating: 4.6, reviews: 128, loc: "Court Road, Aurangabad", open: true, img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=600&auto=format&fit=crop" },
-  { id: 2, name: "Milan Sweets & Bakers", cat: "Sweet Shop", rating: 4.8, reviews: 240, loc: "Station Road, Aurangabad", open: true, img: "https://images.unsplash.com/photo-1517433670267-08bbd4be890f?q=80&w=600&auto=format&fit=crop" },
-  { id: 3, name: "Ideal Motor Works", cat: "Bike Repair & Service", rating: 4.4, reviews: 76, loc: "Daudnagar Road, Aurangabad", open: false, img: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?q=80&w=600&auto=format&fit=crop" },
-  { id: 4, name: "Sunrise Readymade Garments", cat: "Clothing Store", rating: 4.5, reviews: 96, loc: "Bazar Samiti, Aurangabad", open: true, img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=600&auto=format&fit=crop" },
+  { id: 1, name: "Shree Krishna Electronics", category: "Electronics Store", city: "Aurangabad", address: "Court Road, Aurangabad", phone: "9000000001", whatsapp: "9000000001", coverImage: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=600&auto=format&fit=crop", images: ["https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=600&auto=format&fit=crop"] },
+  { id: 2, name: "Milan Sweets & Bakers", category: "Sweet Shop", city: "Aurangabad", address: "Station Road, Aurangabad", phone: "9000000002", whatsapp: "9000000002", coverImage: "https://images.unsplash.com/photo-1517433670267-08bbd4be890f?q=80&w=600&auto=format&fit=crop", images: ["https://images.unsplash.com/photo-1517433670267-08bbd4be890f?q=80&w=600&auto=format&fit=crop"] },
+  { id: 3, name: "Ideal Motor Works", category: "Bike Repair & Service", city: "Aurangabad", address: "Daudnagar Road, Aurangabad", phone: "9000000003", whatsapp: "9000000003", coverImage: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?q=80&w=600&auto=format&fit=crop", images: ["https://images.unsplash.com/photo-1487754180451-c456f719a1fc?q=80&w=600&auto=format&fit=crop"] },
+  { id: 4, name: "Sunrise Readymade Garments", category: "Clothing Store", city: "Aurangabad", address: "Bazar Samiti, Aurangabad", phone: "9000000004", whatsapp: "9000000004", coverImage: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=600&auto=format&fit=crop", images: ["https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=600&auto=format&fit=crop"] },
 ];
 
 export const JOBS = [
-  { id: 1, title: "Field Sales Executive", company: "Nova Distributors", type: "Full-time", exp: "0–2 yrs", salary: "₹12,000–18,000/mo", loc: "Aurangabad, Bihar" },
-  { id: 2, title: "Computer Operator", company: "Sethi Cyber Cafe", type: "Full-time", exp: "Fresher", salary: "₹9,000–12,000/mo", loc: "Aurangabad, Bihar" },
-  { id: 3, title: "Delivery Rider", company: "QuickKirana", type: "Part-time", exp: "Any", salary: "₹300–500/day", loc: "Aurangabad, Bihar" },
-  { id: 4, title: "Store Manager", company: "Milan Sweets & Bakers", type: "Full-time", exp: "2+ yrs", salary: "₹15,000–22,000/mo", loc: "Aurangabad, Bihar" },
+  { id: 1, title: "Field Sales Executive", companyName: "Nova Distributors", jobType: "Full Time", experience: "0–2 yrs", salary: "₹12,000–18,000/mo", location: "Aurangabad", city: "Aurangabad", state: "Bihar" },
+  { id: 2, title: "Computer Operator", companyName: "Sethi Cyber Cafe", jobType: "Full Time", experience: "Fresher", salary: "₹9,000–12,000/mo", location: "Aurangabad", city: "Aurangabad", state: "Bihar" },
+  { id: 3, title: "Delivery Rider", companyName: "QuickKirana", jobType: "Part Time", experience: "Any", salary: "₹300–500/day", location: "Aurangabad", city: "Aurangabad", state: "Bihar" },
+  { id: 4, title: "Store Manager", companyName: "Milan Sweets & Bakers", jobType: "Full Time", experience: "2+ yrs", salary: "₹15,000–22,000/mo", location: "Aurangabad", city: "Aurangabad", state: "Bihar" },
 ];
 
 export const LISTINGS = [
