@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Trash2, MessageSquareText, Package, LogOut, Phone, LayoutDashboard, Megaphone, Bell, Check, ImagePlus, Building2, Briefcase, CheckCircle2 } from "lucide-react";
+import { Trash2, MessageSquareText, Package, LogOut, Phone, LayoutDashboard, Megaphone, Bell, Check, ImagePlus, Building2, Briefcase, CheckCircle2, ShoppingBag, X as XIcon } from "lucide-react";
 import Card from "../components/ui/Card";
 import Badge from "../components/ui/Badge";
 import Btn from "../components/ui/Btn";
-import { userAuthApi, sellerListingsApi, inquiriesApi, adsApi, notificationsApi, businessesApi, jobsApi } from "../lib/api";
+import { userAuthApi, sellerListingsApi, inquiriesApi, adsApi, notificationsApi, businessesApi, jobsApi, ordersApi } from "../lib/api";
 
 const LISTING_STATUS_TONE = { approved: "open", pending: "soon", rejected: "closed", sold: "neutral" };
 const AD_STATUS_TONE = { pending: "soon", approved: "open", active: "open", rejected: "closed", suspended: "closed", expired: "neutral", draft: "neutral" };
@@ -19,14 +19,15 @@ export default function MyAccount() {
   const [ads, setAds] = useState([]);
   const [businesses, setBusinesses] = useState([]);
   const [jobs, setJobs] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const user = userAuthApi.currentUser();
 
   const load = () => {
     setLoading(true);
-    Promise.all([sellerListingsApi.mine(), inquiriesApi.mine(), adsApi.mine(), notificationsApi.mine(), businessesApi.mine(), jobsApi.mine()])
-      .then(([l, i, a, n, biz, jb]) => { setListings(l); setInquiries(i); setAds(a); setNotifications(n); setBusinesses(biz); setJobs(jb); })
+    Promise.all([sellerListingsApi.mine(), inquiriesApi.mine(), adsApi.mine(), notificationsApi.mine(), businessesApi.mine(), jobsApi.mine(), ordersApi.mine()])
+      .then(([l, i, a, n, biz, jb, ord]) => { setListings(l); setInquiries(i); setAds(a); setNotifications(n); setBusinesses(biz); setJobs(jb); setOrders(ord); })
       .finally(() => setLoading(false));
   };
 
@@ -64,6 +65,17 @@ export default function MyAccount() {
     load();
   };
 
+  const confirmOrder = async (id) => {
+    if (!window.confirm("Confirm this sale? The listing will be marked sold and won't be available to other buyers.")) return;
+    await ordersApi.confirm(id);
+    load();
+  };
+
+  const rejectOrder = async (id) => {
+    await ordersApi.reject(id);
+    load();
+  };
+
   const markInquiryRead = async (id) => {
     await inquiriesApi.markRead(id);
     load();
@@ -84,12 +96,14 @@ export default function MyAccount() {
   if (!userAuthApi.isLoggedIn()) return null;
 
   const unreadInquiries = inquiries.filter((i) => i.status === "new").length;
+  const pendingOrders = orders.filter((o) => o.status === "pending").length;
   const unreadNotifications = notifications.filter((n) => !n.read).length;
   const needsMediaCount = ads.filter((a) => a.needsMediaDesign).length;
 
   const TABS = [
     ["overview", "Overview", LayoutDashboard, 0],
     ["listings", "My Listings", Package, 0],
+    ["orders", "Buy Requests", ShoppingBag, pendingOrders],
     ["businesses", "My Businesses", Building2, 0],
     ["jobs", "My Jobs", Briefcase, 0],
     ["ads", "My Ads", Megaphone, needsMediaCount],
@@ -165,6 +179,29 @@ export default function MyAccount() {
               </div>
               {l.status === "rejected" && l.rejectionReason && (
                 <p className="text-xs text-rose-500 mt-3 pl-20">Rejected: {l.rejectionReason}</p>
+              )}
+            </Card>
+          ))}
+        </div>
+      ) : tab === "orders" ? (
+        <div className="space-y-3">
+          {orders.length === 0 && <p className="text-sm text-slate-400">No buy requests yet.</p>}
+          {orders.map((o) => (
+            <Card key={o.id} className="p-4" hover={false}>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-medium text-slate-800 dark:text-white">{o.buyerName} <span className="text-xs text-slate-400 font-normal">· {o.buyerPhone}</span></p>
+                  <p className="text-xs text-slate-400 mt-0.5">Wants to buy: {o.listingTitle}</p>
+                  <p className="text-[11px] text-slate-300 dark:text-slate-500 mt-1">{new Date(o.createdAt).toLocaleString()}</p>
+                </div>
+                <Badge tone={o.status === "confirmed" ? "open" : o.status === "rejected" ? "closed" : "soon"}>{o.status}</Badge>
+              </div>
+              {o.status === "pending" && (
+                <div className="flex gap-2 mt-3">
+                  <Btn variant="primary" size="sm" icon={CheckCircle2} onClick={() => confirmOrder(o.id)}>Confirm sale</Btn>
+                  <Btn variant="danger" size="sm" icon={XIcon} onClick={() => rejectOrder(o.id)}>Reject</Btn>
+                  <Btn variant="ghost" size="sm" icon={Phone} onClick={() => window.open(`tel:${o.buyerPhone}`)}>Call buyer</Btn>
+                </div>
               )}
             </Card>
           ))}

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
-import { Menu, X, Sun, Moon, LayoutDashboard, LogOut } from "lucide-react";
+import { Menu, X, Sun, Moon, LayoutDashboard, LogOut, ShoppingCart } from "lucide-react";
 import Btn from "../ui/Btn";
 import NotificationBell from "../NotificationBell";
 import { goToPostAd as sharedGoToPostAd } from "../../lib/postAdFlow";
 import { userAuthApi } from "../../lib/api";
+import { cart } from "../../lib/cart";
 
 const LINKS = [
   { label: "Home", to: "/" },
@@ -21,8 +22,11 @@ export default function Navbar({ dark, toggleTheme }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [loggedIn, setLoggedIn] = useState(userAuthApi.isLoggedIn());
+  const [cartCount, setCartCount] = useState(cart.count());
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => cart.subscribe((items) => setCartCount(items.length)), []);
 
   // Navbar persists across client-side route changes, so it won't automatically
   // notice a login/logout that happened on another page — re-check whenever the
@@ -94,6 +98,19 @@ export default function Navbar({ dark, toggleTheme }) {
           </button>
 
           {loggedIn && <NotificationBell />}
+
+          <button
+            onClick={() => navigate("/cart")}
+            aria-label="Cart"
+            className="relative w-9 h-9 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+          >
+            <ShoppingCart size={17} />
+            {cartCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-indigo-600 text-white text-[10px] font-bold flex items-center justify-center">
+                {cartCount > 9 ? "9+" : cartCount}
+              </span>
+            )}
+          </button>
 
           <div className="hidden md:flex items-center gap-2 ml-1">
             <Btn variant="marigold" size="sm" onClick={goToPostAd}>Post an Ad</Btn>

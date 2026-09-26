@@ -15,6 +15,7 @@ import SectionHeading from "../components/SectionHeading";
 import RoleCard from "../components/RoleCard";
 import AdvertisementHub from "../components/AdvertisementHub";
 import { goToPostAd } from "../lib/postAdFlow";
+import { categoryDestination } from "../lib/categoryRoutes";
 import RevealImage from "../components/RevealImage";
 import HowItWorks from "../components/HowItWorks";
 import BusinessCard from "../components/BusinessCard";
@@ -23,7 +24,7 @@ import ListingCard from "../components/ListingCard";
 import useCountUp from "../hooks/useCountUp";
 import useInView from "../hooks/useInView";
 import { CATEGORIES, TESTIMONIALS, WHY, PULSE } from "../data/mockData";
-import { businessesApi, jobsApi, listingsApi } from "../lib/api";
+import { businessesApi, jobsApi, listingsApi, statsApi } from "../lib/api";
 
 function PulseTicker() {
   const items = [...PULSE, ...PULSE];
@@ -159,20 +160,27 @@ function CategoriesSection() {
     <section className="max-w-7xl mx-auto px-5 sm:px-8 py-20">
       <SectionHead eyebrow="Explore" title="Browse by category" subtitle="Everything you need from your neighborhood, organized in one place." />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {CATEGORIES.map((c, i) => (
-          <Reveal key={c.title} delay={i * 60}>
-            <button onClick={() => navigate("/categories")} className="w-full text-left group">
-              <Card className="p-5 h-full relative overflow-hidden">
-                {c.soon && <Badge tone="soon" className="absolute top-4 right-4">Soon</Badge>}
-                <div className={`w-11 h-11 rounded-2xl flex items-center justify-center mb-4 ${c.tone} transition-transform group-hover:scale-110`}>
-                  <c.icon size={20} />
-                </div>
-                <h3 className="font-display font-semibold text-slate-900 dark:text-white">{c.title}</h3>
-                <p className="text-xs text-slate-400 mt-1 leading-relaxed">{c.desc}</p>
-              </Card>
-            </button>
-          </Reveal>
-        ))}
+        {CATEGORIES.map((c, i) => {
+          const dest = categoryDestination(c.title);
+          return (
+            <Reveal key={c.title} delay={i * 60}>
+              <button
+                onClick={() => navigate(dest || "/categories")}
+                disabled={c.soon}
+                className={`w-full text-left group ${c.soon ? "cursor-not-allowed opacity-70" : ""}`}
+              >
+                <Card className="p-5 h-full relative overflow-hidden">
+                  {c.soon && <Badge tone="soon" className="absolute top-4 right-4">Soon</Badge>}
+                  <div className={`w-11 h-11 rounded-2xl flex items-center justify-center mb-4 ${c.tone} transition-transform group-hover:scale-110`}>
+                    <c.icon size={20} />
+                  </div>
+                  <h3 className="font-display font-semibold text-slate-900 dark:text-white">{c.title}</h3>
+                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">{c.desc}</p>
+                </Card>
+              </button>
+            </Reveal>
+          );
+        })}
       </div>
     </section>
   );
@@ -267,13 +275,15 @@ function StatCounter({ icon: Icon, value, suffix, label }) {
 }
 
 function StatsSection() {
+  const [stats, setStats] = useState({ businesses: 0, jobs: 0, listings: 0, users: 0 });
+  useEffect(() => { statsApi.get().then(setStats).catch(() => {}); }, []);
   return (
     <section className="bg-[#0B1120] py-20">
       <div className="max-w-7xl mx-auto px-5 sm:px-8 grid grid-cols-2 lg:grid-cols-4 gap-10">
-        <StatCounter icon={BuildingIcon} value={340} suffix="+" label="Local businesses" />
-        <StatCounter icon={Briefcase} value={520} suffix="+" label="Jobs posted" />
-        <StatCounter icon={ListChecks} value={890} suffix="+" label="Buy & sell listings" />
-        <StatCounter icon={Users} value={6200} suffix="+" label="Registered users" />
+        <StatCounter icon={BuildingIcon} value={stats.businesses} suffix={stats.businesses > 0 ? "+" : ""} label="Local businesses" />
+        <StatCounter icon={Briefcase} value={stats.jobs} suffix={stats.jobs > 0 ? "+" : ""} label="Jobs posted" />
+        <StatCounter icon={ListChecks} value={stats.listings} suffix={stats.listings > 0 ? "+" : ""} label="Buy & sell listings" />
+        <StatCounter icon={Users} value={stats.users} suffix={stats.users > 0 ? "+" : ""} label="Registered users" />
       </div>
     </section>
   );

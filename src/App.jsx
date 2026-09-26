@@ -25,6 +25,7 @@ import CreateAd from "./pages/CreateAd";
 import AdDetails from "./pages/AdDetails";
 import AddBusiness from "./pages/AddBusiness";
 import PostJob from "./pages/PostJob";
+import Cart from "./pages/Cart";
 import MyAccount from "./pages/MyAccount";
 import NotFound from "./pages/NotFound";
 
@@ -66,6 +67,7 @@ export default function App() {
         <Route path="/ads/:id" element={<AdDetails />} />
         <Route path="/add-business" element={<AddBusiness />} />
         <Route path="/post-job" element={<PostJob />} />
+        <Route path="/cart" element={<Cart />} />
         <Route path="/my-account" element={<MyAccount />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

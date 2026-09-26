@@ -134,6 +134,15 @@ export const inquiriesApi = {
   markRead: (id) => request(`/inquiries/${id}/read`, { method: "PATCH", headers: userAuthHeader() }),
 };
 
+/** Buy Now requests on Buy & Sell listings. Buying is public (no login); the seller
+ *  confirms one (which marks the listing sold) or rejects it from their dashboard. */
+export const ordersApi = {
+  buy: (listingId, payload) => request(`/listings/${listingId}/buy`, { method: "POST", body: JSON.stringify(payload) }),
+  mine: () => request("/orders", { headers: userAuthHeader() }),
+  confirm: (id) => request(`/orders/${id}/confirm`, { method: "PATCH", headers: userAuthHeader() }),
+  reject: (id) => request(`/orders/${id}/reject`, { method: "PATCH", headers: userAuthHeader() }),
+};
+
 /** Uploads a photo/video (as a Blob/File) to Cloudinary via the backend; returns { url }. */
 export const uploadApi = {
   file: async (blob, filename = "upload.jpg") => {
@@ -186,6 +195,10 @@ export const adsApi = {
 };
 
 /** In-app notifications for the logged-in user (buyer inquiries, ad status changes, etc). */
+export const statsApi = {
+  get: () => request("/stats"),
+};
+
 export const notificationsApi = {
   mine: () => request("/notifications", { headers: userAuthHeader() }),
   markRead: (id) => request(`/notifications/${id}/read`, { method: "PATCH", headers: userAuthHeader() }),
