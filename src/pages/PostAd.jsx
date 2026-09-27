@@ -6,6 +6,7 @@ import Card from "../components/ui/Card";
 import Btn from "../components/ui/Btn";
 import { sellerAuthApi, sellerListingsApi, uploadApi } from "../lib/api";
 import { compressImageFile } from "../lib/imageCompress";
+import ImageLightbox from "../components/ImageLightbox";
 
 const CATEGORIES = ["Vehicles", "Electronics", "Furniture", "Fashion", "Books & Hobbies", "Other"];
 const CONDITIONS = ["New", "Used – Excellent", "Used – Good", "Used – Fair"];
@@ -17,6 +18,7 @@ export default function PostAd() {
   // 1: details, 2: verify phone (required before upload, since uploads need a logged-in user), 3: photos, 4: done
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
+  const [lightboxIndex, setLightboxIndex] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const [details, setDetails] = useState({ title: "", category: "Vehicles", price: "", cond: "Used – Good", loc: "Aurangabad" });
@@ -188,10 +190,10 @@ export default function PostAd() {
               <p className="text-sm text-slate-500 dark:text-slate-400">Add {MAX_IMAGES - images.length > 0 ? `up to ${MAX_IMAGES - images.length} more` : "up to 6"} photos. The first photo becomes the cover image.</p>
               <div className="grid grid-cols-3 gap-3">
                 {images.map((src, i) => (
-                  <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-white/10">
+                  <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 cursor-zoom-in" onClick={() => setLightboxIndex(i)}>
                     <img src={src} className="w-full h-full object-cover" alt={`Upload ${i + 1}`} />
                     {i === 0 && <span className="absolute bottom-1 left-1 bg-indigo-600 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">Cover</span>}
-                    <button onClick={() => removeImage(i)} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center"><X size={12} /></button>
+                    <button onClick={(e) => { e.stopPropagation(); removeImage(i); }} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center"><X size={12} /></button>
                   </div>
                 ))}
                 {images.length < MAX_IMAGES && (
@@ -229,6 +231,7 @@ export default function PostAd() {
           )}
         </Card>
       </div>
+      <ImageLightbox images={images} index={lightboxIndex} onClose={() => setLightboxIndex(null)} onIndexChange={setLightboxIndex} />
     </>
   );
 }

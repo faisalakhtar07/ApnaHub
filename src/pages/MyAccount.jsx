@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Trash2, MessageSquareText, Package, LogOut, Phone, LayoutDashboard, Megaphone, Bell, Check, ImagePlus, Building2, Briefcase, CheckCircle2, ShoppingBag, X as XIcon } from "lucide-react";
+import { Trash2, MessageSquareText, Package, LogOut, Phone, LayoutDashboard, Megaphone, Bell, Check, ImagePlus, Building2, Briefcase, CheckCircle2, ShoppingBag, X as XIcon, Pencil } from "lucide-react";
 import Card from "../components/ui/Card";
 import Badge from "../components/ui/Badge";
 import Btn from "../components/ui/Btn";
@@ -174,6 +174,9 @@ export default function MyAccount() {
                 <Badge tone={LISTING_STATUS_TONE[l.status] || "neutral"}>{l.status || "approved"}</Badge>
                 {l.status === "approved" && (
                   <Btn variant="outline" size="sm" icon={CheckCircle2} onClick={() => markSold(l.id)}>Mark sold</Btn>
+                )}
+                {l.status !== "sold" && (
+                  <Btn variant="ghost" size="sm" icon={Pencil} onClick={() => navigate(`/edit-listing/${l.id}`)}>Edit</Btn>
                 )}
                 <button onClick={() => removeListing(l.id)} className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-500 shrink-0"><Trash2 size={15} /></button>
               </div>

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { MessageCircle, Heart, MapPin, MessageSquareText, ShoppingBag, ShoppingCart, Check } from "lucide-react";
+import { MessageCircle, Heart, MapPin, MessageSquareText, ShoppingBag, ShoppingCart, Check, ZoomIn } from "lucide-react";
 import Breadcrumb from "../components/layout/Breadcrumb";
 import Badge from "../components/ui/Badge";
 import Btn from "../components/ui/Btn";
 import AskSellerModal from "../components/AskSellerModal";
 import BuyNowModal from "../components/BuyNowModal";
+import ImageLightbox from "../components/ImageLightbox";
 import { listingsApi } from "../lib/api";
 import { cart } from "../lib/cart";
 
@@ -17,6 +18,7 @@ export default function ProductDetails() {
   const [askOpen, setAskOpen] = useState(false);
   const [buyOpen, setBuyOpen] = useState(false);
   const [inCart, setInCart] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(null);
 
   useEffect(() => { listingsApi.get(id).then(setL); }, [id]);
   useEffect(() => { if (l) setInCart(cart.has(l.id)); }, [l]);
@@ -36,8 +38,13 @@ export default function ProductDetails() {
       <Breadcrumb items={["Home", "Buy & Sell", l.title]} />
       <div className="max-w-4xl mx-auto px-5 sm:px-8 py-8 grid sm:grid-cols-2 gap-8">
         <div>
-          <div className="relative rounded-3xl overflow-hidden h-72 sm:h-96">
+          <div className="relative rounded-3xl overflow-hidden h-72 sm:h-96 cursor-zoom-in" onClick={() => !sold && setLightboxIndex(activeImg)}>
             <img src={gallery[activeImg]} className={`w-full h-full object-cover ${sold ? "grayscale opacity-70" : ""}`} alt={l.title} />
+            {!sold && (
+              <span className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center">
+                <ZoomIn size={14} />
+              </span>
+            )}
             {sold && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="px-5 py-2 rounded-full bg-slate-900/80 text-white font-display font-bold tracking-wide">SOLD</span>
@@ -100,6 +107,7 @@ export default function ProductDetails() {
       </div>
       <AskSellerModal open={askOpen} onClose={() => setAskOpen(false)} listingId={l.id} listingTitle={l.title} />
       <BuyNowModal open={buyOpen} onClose={() => setBuyOpen(false)} listingId={l.id} listingTitle={l.title} />
+      <ImageLightbox images={gallery} index={lightboxIndex} onClose={() => setLightboxIndex(null)} onIndexChange={setLightboxIndex} />
     </>
   );
 }

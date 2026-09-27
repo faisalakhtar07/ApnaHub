@@ -20,6 +20,7 @@ import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import Profile from "./pages/Profile";
 import PostAd from "./pages/PostAd";
+import EditListing from "./pages/EditListing";
 import SubscriptionPlans from "./pages/SubscriptionPlans";
 import CreateAd from "./pages/CreateAd";
 import AdDetails from "./pages/AdDetails";
@@ -62,6 +63,7 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/post-ad" element={<PostAd />} />
+        <Route path="/edit-listing/:id" element={<EditListing />} />
         <Route path="/subscribe" element={<SubscriptionPlans />} />
         <Route path="/create-ad" element={<CreateAd />} />
         <Route path="/ads/:id" element={<AdDetails />} />
