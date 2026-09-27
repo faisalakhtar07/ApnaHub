@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Trash2, MessageSquareText, Package, LogOut, Phone, LayoutDashboard, Megaphone, Bell, Check, ImagePlus, Building2, Briefcase, CheckCircle2, ShoppingBag, X as XIcon, Pencil } from "lucide-react";
+import { Trash2, MessageSquareText, Package, LogOut, Phone, LayoutDashboard, Megaphone, Bell, Check, ImagePlus, Building2, Briefcase, CheckCircle2, ShoppingBag, X as XIcon, Pencil, Plus } from "lucide-react";
 import Card from "../components/ui/Card";
 import Badge from "../components/ui/Badge";
 import Btn from "../components/ui/Btn";
@@ -162,7 +162,11 @@ export default function MyAccount() {
         </div>
       ) : tab === "listings" ? (
         <div className="space-y-3">
-          {listings.length === 0 && <p className="text-sm text-slate-400">You haven't posted anything yet.</p>}
+          <div className="flex items-center justify-between gap-4 mb-2">
+            <p className="text-sm text-slate-400">Items you've listed for sale on Buy & Sell.</p>
+            <Btn variant="primary" icon={Plus} className="shrink-0" onClick={() => navigate("/post-ad")}>Sell an Item</Btn>
+          </div>
+          {listings.length === 0 && <p className="text-sm text-slate-400">You haven't posted anything yet — tap "Sell an Item" above to list your first one.</p>}
           {listings.map((l) => (
             <Card key={l.id} className="p-4" hover={false}>
               <div className="flex items-center gap-4">
@@ -211,7 +215,11 @@ export default function MyAccount() {
         </div>
       ) : tab === "businesses" ? (
         <div className="space-y-3">
-          {businesses.length === 0 && <p className="text-sm text-slate-400">You haven't listed a business yet. Use "List Your Business" from the Businesses page.</p>}
+          <div className="flex items-center justify-between gap-4 mb-2">
+            <p className="text-sm text-slate-400">Businesses you've listed.</p>
+            <Btn variant="primary" icon={Plus} className="shrink-0" onClick={() => navigate("/add-business")}>List a Business</Btn>
+          </div>
+          {businesses.length === 0 && <p className="text-sm text-slate-400">You haven't listed a business yet — tap "List a Business" above.</p>}
           {businesses.map((b) => (
             <Card key={b.id} className="p-4" hover={false}>
               <div className="flex items-center gap-4">
@@ -235,7 +243,11 @@ export default function MyAccount() {
         </div>
       ) : tab === "jobs" ? (
         <div className="space-y-3">
-          {jobs.length === 0 && <p className="text-sm text-slate-400">You haven't posted a job yet. Use "Post a Job" from the Jobs page.</p>}
+          <div className="flex items-center justify-between gap-4 mb-2">
+            <p className="text-sm text-slate-400">Jobs you've posted.</p>
+            <Btn variant="primary" icon={Plus} className="shrink-0" onClick={() => navigate("/post-job")}>Post a Job</Btn>
+          </div>
+          {jobs.length === 0 && <p className="text-sm text-slate-400">You haven't posted a job yet — tap "Post a Job" above.</p>}
           {jobs.map((j) => (
             <Card key={j.id} className="p-4" hover={false}>
               <div className="flex items-center gap-4">

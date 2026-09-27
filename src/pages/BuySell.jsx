@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { Plus } from "lucide-react";
 import PageHeader from "../components/layout/PageHeader";
 import Breadcrumb from "../components/layout/Breadcrumb";
 import FilterBar from "../components/layout/FilterBar";
 import PaginationBar from "../components/layout/PaginationBar";
 import Reveal from "../components/ui/Reveal";
+import Btn from "../components/ui/Btn";
 import ListingCard from "../components/ListingCard";
 import { listingsApi } from "../lib/api";
 
 const TABS = ["All", "Vehicles", "Electronics", "Furniture", "Fashion", "Books & Hobbies", "Other"];
 
 export default function BuySell() {
+  const navigate = useNavigate();
   const [params] = useSearchParams();
   const initialCategory = params.get("category");
   const [tab, setTab] = useState(TABS.includes(initialCategory) ? initialCategory : "All");
@@ -24,7 +27,10 @@ export default function BuySell() {
       <PageHeader eyebrow="Marketplace" title="Buy & Sell" subtitle="Active listings from people near you." />
       <Breadcrumb items={["Home", "Buy & Sell"]} />
       <div className="max-w-7xl mx-auto px-5 sm:px-8 py-8">
-        <FilterBar tabs={TABS} active={tab} setActive={setTab} />
+        <div className="flex items-center justify-between gap-4 mb-2">
+          <FilterBar tabs={TABS} active={tab} setActive={setTab} />
+          <Btn variant="primary" icon={Plus} className="shrink-0" onClick={() => navigate("/post-ad")}>Sell an Item</Btn>
+        </div>
         {visible.length === 0 ? (
           <p className="text-sm text-slate-400 py-12 text-center">No listings in this category yet.</p>
         ) : (
