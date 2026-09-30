@@ -15,7 +15,7 @@ const MAX_IMAGES = 6;
 export default function PostAd() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
-  // 1: details, 2: verify phone (required before upload, since uploads need a logged-in user), 3: photos, 4: done
+  // 1: details, 2: seller details (required before upload, since uploads need a logged-in user), 3: photos, 4: done
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
   const [lightboxIndex, setLightboxIndex] = useState(null);
@@ -27,9 +27,7 @@ export default function PostAd() {
 
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState("");
-  const [devOtp, setDevOtp] = useState("");
+  const [password, setPassword] = useState("");
 
   const updateDetails = (k) => (e) => setDetails({ ...details, [k]: e.target.value });
 
@@ -62,27 +60,12 @@ export default function PostAd() {
     setStep(2);
   };
 
-  const requestOtp = async (e) => {
+  const signupAndContinue = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      const res = await sellerAuthApi.requestOtp(phone);
-      setOtpSent(true);
-      if (res.devOtp) setDevOtp(res.devOtp); // dev-mode only, until a real SMS provider is wired up
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const verifyAndContinue = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      await sellerAuthApi.verifyOtp(phone, otp, name);
+      await sellerAuthApi.signup(name, phone, password);
       setStep(3);
     } catch (err) {
       setError(err.message);
@@ -107,10 +90,10 @@ export default function PostAd() {
 
   return (
     <>
-      <PageHeader eyebrow="Sell on APNAHUB" title="List an Item for Sale" subtitle="List your item in a few steps — free, and no account needed to get started." />
+      <PageHeader eyebrow="Sell on APNAHUB" title="List an Item for Sale" subtitle="List your item in a few steps — free and quick." />
       <div className="max-w-2xl mx-auto px-5 sm:px-8 py-10">
         <div className="flex items-center gap-2 mb-8">
-          {["Details", "Verify", "Photos"].map((label, i) => (
+          {["Details", "Contact", "Photos"].map((label, i) => (
             <React.Fragment key={label}>
               <div className={`flex items-center gap-2 text-sm font-medium ${step >= i + 1 ? "text-indigo-600 dark:text-indigo-400" : "text-slate-300 dark:text-slate-600"}`}>
                 <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step >= i + 1 ? "bg-indigo-600 text-white" : "bg-slate-100 dark:bg-white/10"}`}>{i + 1}</span>
@@ -153,33 +136,25 @@ export default function PostAd() {
                 </div>
               </div>
               {error && <p className="text-xs text-rose-500">{error}</p>}
-              <Btn variant="primary" className="w-full" type="submit" iconRight>Continue to verify</Btn>
+              <Btn variant="primary" className="w-full" type="submit" iconRight>Continue</Btn>
             </form>
           )}
 
           {step === 2 && (
-            <form onSubmit={otpSent ? verifyAndContinue : requestOtp} className="space-y-4">
+            <form onSubmit={signupAndContinue} className="space-y-4">
               <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 mb-2">
                 <ShieldCheck size={18} />
-                <p className="text-sm font-semibold">Verify your phone to continue</p>
+                <p className="text-sm font-semibold">Your contact details</p>
               </div>
-              {!otpSent ? (
-                <>
-                  <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/15 bg-slate-50 dark:bg-white/5 text-sm outline-none focus:ring-2 ring-indigo-400 text-slate-700 dark:text-slate-200" />
-                  <input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone number" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/15 bg-slate-50 dark:bg-white/5 text-sm outline-none focus:ring-2 ring-indigo-400 text-slate-700 dark:text-slate-200" />
-                </>
-              ) : (
-                <>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Enter the code sent to <span className="font-semibold text-slate-700 dark:text-slate-200">{phone}</span></p>
-                  {devOtp && <p className="text-xs text-amber-600 dark:text-amber-400">Dev mode — your code is <strong>{devOtp}</strong> (no SMS provider hooked up yet)</p>}
-                  <input required value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="6-digit code" maxLength={6} className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/15 bg-slate-50 dark:bg-white/5 text-sm outline-none focus:ring-2 ring-indigo-400 text-slate-700 dark:text-slate-200 tracking-[0.3em] text-center font-mono" />
-                </>
-              )}
+              <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/15 bg-slate-50 dark:bg-white/5 text-sm outline-none focus:ring-2 ring-indigo-400 text-slate-700 dark:text-slate-200" />
+              <input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone number" inputMode="tel" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/15 bg-slate-50 dark:bg-white/5 text-sm outline-none focus:ring-2 ring-indigo-400 text-slate-700 dark:text-slate-200" />
+              <input required type="password" minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a password (min 6 characters)" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/15 bg-slate-50 dark:bg-white/5 text-sm outline-none focus:ring-2 ring-indigo-400 text-slate-700 dark:text-slate-200" />
+              <p className="text-xs text-slate-400">Already posted before? Use the same phone number and password.</p>
               {error && <p className="text-xs text-rose-500">{error}</p>}
               <div className="flex gap-3">
-                <Btn variant="outline" icon={ArrowLeft} onClick={() => (otpSent ? setOtpSent(false) : setStep(1))} type="button">Back</Btn>
+                <Btn variant="outline" icon={ArrowLeft} onClick={() => setStep(1)} type="button">Back</Btn>
                 <Btn variant="primary" className="flex-1" type="submit" disabled={loading} iconRight={!loading}>
-                  {loading ? "Please wait…" : otpSent ? "Verify & continue" : "Send OTP"}
+                  {loading ? "Please wait…" : "Continue"}
                 </Btn>
               </div>
             </form>

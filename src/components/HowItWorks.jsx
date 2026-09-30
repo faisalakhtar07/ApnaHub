@@ -5,12 +5,12 @@ import RevealImage from "./RevealImage";
 const STEPS = [
   {
     title: "Post Your Item",
-    desc: "Sellers list an item with 5–6 photos, price and location — no account needed upfront, just a phone number.",
+    desc: "Sellers list an item with 5–6 photos, price and location — just add your name, phone number and a password.",
     image: "https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&w=1600&q=80",
   },
   {
-    title: "Verify With OTP",
-    desc: "A quick OTP confirms the seller's phone number, keeping every listing tied to a real, reachable person.",
+    title: "Add Your Contact",
+    desc: "Sellers share their phone number so every listing is tied to a real, reachable person.",
     image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=1600&q=80",
   },
   {

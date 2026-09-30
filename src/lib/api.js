@@ -2,7 +2,7 @@ import { BUSINESSES, JOBS, LISTINGS } from "../data/mockData";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const ADMIN_TOKEN_KEY = "apnahub_admin_token";
-const USER_TOKEN_KEY = "apnahub_user_token"; // shared by password login AND phone-OTP login
+const USER_TOKEN_KEY = "apnahub_user_token"; // shared by all login flows
 const USER_DATA_KEY = "apnahub_user_data";
 
 const FALLBACK = { businesses: BUSINESSES, jobs: JOBS, listings: LISTINGS };
@@ -97,7 +97,7 @@ export const adminAuthApi = {
   isLoggedIn: () => Boolean(localStorage.getItem(ADMIN_TOKEN_KEY)),
 };
 
-/** Full account auth — register/login by phone + password. Same session as phone-OTP login below. */
+/** Full account auth — register/login by phone + password. Same session as the seller signup below. */
 export const userAuthApi = {
   register: (payload) => request("/auth/register", { method: "POST", body: JSON.stringify(payload) }).then(storeUserSession),
   login: (phone, password) => request("/auth/login", { method: "POST", body: JSON.stringify({ phone, password }) }).then(storeUserSession),
@@ -108,11 +108,9 @@ export const userAuthApi = {
   currentUser: () => JSON.parse(localStorage.getItem(USER_DATA_KEY) || "null"),
 };
 
-/** Guest-posting seller flow: verify a phone number via OTP. Issues the same kind of
- *  session as userAuthApi, just without needing a password up front. */
+/** Seller flow for posting ads: name + phone + password (creates the account, or logs in if it exists). */
 export const sellerAuthApi = {
-  requestOtp: (phone) => request("/auth/request-otp", { method: "POST", body: JSON.stringify({ phone }) }),
-  verifyOtp: (phone, code, name) => request("/auth/verify-otp", { method: "POST", body: JSON.stringify({ phone, code, name }) }).then(storeUserSession),
+  signup: (name, phone, password) => request("/auth/seller-signup", { method: "POST", body: JSON.stringify({ name, phone, password }) }).then(storeUserSession),
   logout: userAuthApi.logout,
   isLoggedIn: userAuthApi.isLoggedIn,
   currentUser: userAuthApi.currentUser,
